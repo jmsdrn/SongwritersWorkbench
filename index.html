@@ -3,17 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Harmony Workbench</title>
+<title>The Songwriter's Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sansita+One&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fafaf7;
-    --surface: #ffffff;
-    --surface-2: #f1efe8;
-    --border: rgba(0,0,0,0.10);
-    --border-strong: rgba(0,0,0,0.18);
-    --text: #1a1a18;
-    --text-2: #5f5e5a;
-    --text-3: #888780;
+    --bg: #f4ecd6;
+    --surface: #fbf6e9;
+    --surface-2: #ece0c4;
+    --border: rgba(90,60,25,0.16);
+    --border-strong: rgba(90,60,25,0.28);
+    --text: #2c2113;
+    --text-2: #6a5a3f;
+    --text-3: #97855f;
     --tonic-fill: #9FE1CB; --tonic-stroke: #0F6E56; --tonic-text: #04342C;
     --sub-fill:   #F4C0D1; --sub-stroke:   #993556; --sub-text:   #4B1528;
     --dom-fill:   #FAC775; --dom-stroke:   #854F0B; --dom-text:   #412402;
@@ -21,15 +24,17 @@
     --mod-fill:   #F5C4B3; --mod-stroke:   #712B13; --mod-text:   #4A1B0C;
     --tt-fill:    #D3D1C7; --tt-stroke:    #444441; --tt-text:    #2C2C2A;
     --cm-fill:    #B5D4F4; --cm-stroke:    #185FA5; --cm-text:    #0C447C;
-    --neu-fill:   #f1efe8; --neu-stroke:   #B4B2A9; --neu-text:   #5F5E5A;
-    --accent:     #534AB7;
-    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+    --neu-fill:   #ece0c4; --neu-stroke:   #c2ad84; --neu-text:   #6a5a3f;
+    --accent:     #b5530f;
+    --accent-2:   #c9851a;
+    --shadow: 0 1px 2px rgba(80,50,15,0.06), 0 4px 12px rgba(80,50,15,0.07);
+    --grain-opacity: 0.10;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1a1a18; --surface: #25241f; --surface-2: #2c2c2a;
-      --border: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.18);
-      --text: #f3f2ec; --text-2: #b4b2a9; --text-3: #888780;
+    :root:not([data-theme="light"]) {
+      --bg: #1c160e; --surface: #261d12; --surface-2: #332617;
+      --border: rgba(255,225,180,0.12); --border-strong: rgba(255,225,180,0.22);
+      --text: #f3e8d3; --text-2: #c2ad88; --text-3: #93815f;
       --tonic-fill: #0F6E56; --tonic-stroke: #5DCAA5; --tonic-text: #E1F5EE;
       --sub-fill:   #993556; --sub-stroke:   #ED93B1; --sub-text:   #FBEAF0;
       --dom-fill:   #854F0B; --dom-stroke:   #EF9F27; --dom-text:   #FAEEDA;
@@ -37,24 +42,63 @@
       --mod-fill:   #712B13; --mod-stroke:   #F0997B; --mod-text:   #FAECE7;
       --tt-fill:    #444441; --tt-stroke:    #B4B2A9; --tt-text:    #F1EFE8;
       --cm-fill:    #185FA5; --cm-stroke:    #85B7EB; --cm-text:    #E6F1FB;
-      --neu-fill:   #2c2c2a; --neu-stroke:   #5F5E5A; --neu-text:   #B4B2A9;
-      --accent:     #AFA9EC;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+      --neu-fill:   #332617; --neu-stroke:   #6a5839; --neu-text:   #c2ad88;
+      --accent:     #e8895a;
+      --accent-2:   #f0c074;
+      --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 4px 12px rgba(0,0,0,0.25);
+      --grain-opacity: 0.07;
     }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1c160e; --surface: #261d12; --surface-2: #332617;
+    --border: rgba(255,225,180,0.12); --border-strong: rgba(255,225,180,0.22);
+    --text: #f3e8d3; --text-2: #c2ad88; --text-3: #93815f;
+    --tonic-fill: #0F6E56; --tonic-stroke: #5DCAA5; --tonic-text: #E1F5EE;
+    --sub-fill:   #993556; --sub-stroke:   #ED93B1; --sub-text:   #FBEAF0;
+    --dom-fill:   #854F0B; --dom-stroke:   #EF9F27; --dom-text:   #FAEEDA;
+    --sec-fill:   #3C3489; --sec-stroke:   #AFA9EC; --sec-text:   #EEEDFE;
+    --mod-fill:   #712B13; --mod-stroke:   #F0997B; --mod-text:   #FAECE7;
+    --tt-fill:    #444441; --tt-stroke:    #B4B2A9; --tt-text:    #F1EFE8;
+    --cm-fill:    #185FA5; --cm-stroke:    #85B7EB; --cm-text:    #E6F1FB;
+    --neu-fill:   #332617; --neu-stroke:   #6a5839; --neu-text:   #c2ad88;
+    --accent:     #e8895a;
+    --accent-2:   #f0c074;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 4px 12px rgba(0,0,0,0.25);
+    --grain-opacity: 0.07;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0; padding: 0;
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     background: var(--bg); color: var(--text);
     font-size: 14px; line-height: 1.55;
     min-height: 100vh;
+    position: relative;
   }
-  .layout { max-width: 1280px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.42 0 0 0 0 0.30 0 0 0 0 0.13 0 0 0 0.9 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+    background-size: 160px 160px;
+  }
+  .layout, #tooltip, #export-modal { position: relative; z-index: 1; }
+  .layout { max-width: 1240px; margin: 0 auto; padding: 20px 24px; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; }
   @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
-  header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-  header h1 { font-size: 22px; font-weight: 500; margin: 0; }
-  header p { color: var(--text-2); margin: 0; font-size: 13px; }
+  header { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 14px; }
+  .topnav { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 0.5px solid var(--border); }
+  .topnav .brand-mini { font-family: "Sansita One", Georgia, serif; font-size: 16px; color: var(--accent); letter-spacing: -0.01em; }
+  .topnav nav { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .topnav nav a { color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 600; transition: color 0.15s; }
+  .topnav nav a:hover { color: var(--accent); }
+  .topnav nav a.active { color: var(--text); }
+  .topnav nav a.signin { color: var(--accent); border: 0.5px solid var(--border-strong); padding: 5px 14px; border-radius: 999px; }
+  .topnav nav a.signin:hover { background: var(--surface-2); }
+  .theme-toggle { width: 34px; height: 34px; border-radius: 50%; border: 0.5px solid var(--border-strong); background: var(--surface); color: var(--text-2); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; transition: background 0.15s, color 0.15s; padding: 0; }
+  .theme-toggle:hover { background: var(--surface-2); color: var(--accent); }
+  .brand { display: flex; flex-direction: column; gap: 2px; padding: 4px 0 8px; }
+  .brand h1 { font-family: "Sansita One", Georgia, serif; font-size: 46px; font-weight: 400; margin: 0; color: var(--text); letter-spacing: -0.01em; line-height: 1.0; }
+  .brand .tagline { color: var(--accent); margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
+  @media (max-width: 640px) { .brand h1 { font-size: 34px; } }
   .panel { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
   .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 12px; font-size: 13px; color: var(--text-2); }
   .controls label { display: inline-flex; align-items: center; gap: 6px; }
@@ -70,7 +114,7 @@
   .btn.danger { color: #993535; }
   .info-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; border: 0.5px solid var(--text-3); color: var(--text-3); font-size: 9px; font-style: italic; font-weight: 500; cursor: help; margin-left: 4px; }
   /* SVG / wheel */
-  #wheel-svg { width: 100%; height: auto; display: block; touch-action: none; }
+  #wheel-svg { width: 100%; max-width: 576px; height: auto; display: block; margin: 0 auto; touch-action: none; }
   .chord-node { cursor: pointer; transition: transform 0.4s cubic-bezier(.4,.0,.2,1), opacity 0.3s; transform-origin: center; }
   .chord-node:hover .chord-bg { filter: brightness(1.05); }
   .chord-node.dim { opacity: 0.18; }
@@ -130,8 +174,20 @@
 
 <div class="layout">
   <header>
-    <h1>Harmony workbench</h1>
-    <p>Click chords to explore. Build progressions. Export tabs.</p>
+    <div class="topnav">
+      <span class="brand-mini">Songwriter's Workbench</span>
+      <nav>
+        <a href="#" class="active">Workbench</a>
+        <a href="#">Learn</a>
+        <a href="#">About</a>
+        <a href="#" class="signin">Sign in</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" data-tip="Switch between light and dark mode.">☾</button>
+      </nav>
+    </div>
+    <div class="brand">
+      <h1>The Songwriter's Workbench</h1>
+      <p class="tagline">Explore · Learn · Craft</p>
+    </div>
   </header>
 
   <!-- LEFT COLUMN: wheel + controls -->
@@ -1242,7 +1298,7 @@ function pad(s, w, ch){
 }
 
 function buildExport(){
-  const head = `Harmony Workbench — Progression Export\nKey: ${fmt(state.key)} ${state.mode}\nTempo: ${document.getElementById('tempo').value} bpm\n\n`;
+  const head = `The Songwriter's Workbench — Progression Export\nKey: ${fmt(state.key)} ${state.mode}\nTempo: ${document.getElementById('tempo').value} bpm\n\n`;
   const roman = 'Roman numerals: ' + state.progression.map(c=>c.roman||'?').join(' – ') + '\n';
   const names = 'Chord symbols: ' + state.progression.map(c=>c.label).join(' – ') + '\n\n';
   const q = describeProgression(state.progression);
@@ -1305,6 +1361,30 @@ document.getElementById('download-export').addEventListener('click', ()=>{
   a.click();
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
 });
+
+// ---------- Theme toggle ----------
+(function(){
+  const toggle = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+  function systemDark(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function currentlyDark(){
+    const t = root.getAttribute('data-theme');
+    if(t==='dark') return true;
+    if(t==='light') return false;
+    return systemDark();
+  }
+  function applyGlyph(){ toggle.textContent = currentlyDark() ? '☀' : '☾'; }
+  let saved = null;
+  try { saved = localStorage.getItem('sw-theme'); } catch(e){}
+  if(saved==='dark' || saved==='light') root.setAttribute('data-theme', saved);
+  applyGlyph();
+  toggle.addEventListener('click', ()=>{
+    const next = currentlyDark() ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('sw-theme', next); } catch(e){}
+    applyGlyph();
+  });
+})();
 
 // Initial render
 render();
