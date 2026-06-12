@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harmony Workbench</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --border: rgba(0,0,0,0.10);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --tonic-fill: #9FE1CB; --tonic-stroke: #0F6E56; --tonic-text: #04342C;
+    --sub-fill:   #F4C0D1; --sub-stroke:   #993556; --sub-text:   #4B1528;
+    --dom-fill:   #FAC775; --dom-stroke:   #854F0B; --dom-text:   #412402;
+    --sec-fill:   #CECBF6; --sec-stroke:   #3C3489; --sec-text:   #26215C;
+    --mod-fill:   #F5C4B3; --mod-stroke:   #712B13; --mod-text:   #4A1B0C;
+    --tt-fill:    #D3D1C7; --tt-stroke:    #444441; --tt-text:    #2C2C2A;
+    --cm-fill:    #B5D4F4; --cm-stroke:    #185FA5; --cm-text:    #0C447C;
+    --neu-fill:   #f1efe8; --neu-stroke:   #B4B2A9; --neu-text:   #5F5E5A;
+    --accent:     #534AB7;
+    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18; --surface: #25241f; --surface-2: #2c2c2a;
+      --border: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.18);
+      --text: #f3f2ec; --text-2: #b4b2a9; --text-3: #888780;
+      --tonic-fill: #0F6E56; --tonic-stroke: #5DCAA5; --tonic-text: #E1F5EE;
+      --sub-fill:   #993556; --sub-stroke:   #ED93B1; --sub-text:   #FBEAF0;
+      --dom-fill:   #854F0B; --dom-stroke:   #EF9F27; --dom-text:   #FAEEDA;
+      --sec-fill:   #3C3489; --sec-stroke:   #AFA9EC; --sec-text:   #EEEDFE;
+      --mod-fill:   #712B13; --mod-stroke:   #F0997B; --mod-text:   #FAECE7;
+      --tt-fill:    #444441; --tt-stroke:    #B4B2A9; --tt-text:    #F1EFE8;
+      --cm-fill:    #185FA5; --cm-stroke:    #85B7EB; --cm-text:    #E6F1FB;
+      --neu-fill:   #2c2c2a; --neu-stroke:   #5F5E5A; --neu-text:   #B4B2A9;
+      --accent:     #AFA9EC;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: 14px; line-height: 1.55;
+    min-height: 100vh;
+  }
+  .layout { max-width: 1280px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; }
+  @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
+  header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 22px; font-weight: 500; margin: 0; }
+  header p { color: var(--text-2); margin: 0; font-size: 13px; }
+  .panel { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 12px; font-size: 13px; color: var(--text-2); }
+  .controls label { display: inline-flex; align-items: center; gap: 6px; }
+  .controls select, .controls input[type=range] { font: inherit; font-size: 13px; padding: 4px 8px; border-radius: 6px; border: 0.5px solid var(--border-strong); background: var(--surface); color: var(--text); }
+  .layer-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; border: 0.5px solid var(--border); cursor: pointer; transition: background 0.15s, border-color 0.15s; font-size: 12px; user-select: none; color: var(--text-2); position: relative; }
+  .layer-pill.on { background: var(--surface-2); border-color: var(--border-strong); color: var(--text); }
+  .layer-pill input { display: none; }
+  .layer-pill .sw { width: 8px; height: 8px; border-radius: 2px; }
+  .btn { font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--border-strong); background: var(--surface); cursor: pointer; color: var(--text); transition: background 0.15s; }
+  .btn:hover { background: var(--surface-2); }
+  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.danger { color: #993535; }
+  .info-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; border: 0.5px solid var(--text-3); color: var(--text-3); font-size: 9px; font-style: italic; font-weight: 500; cursor: help; margin-left: 4px; }
+  /* SVG / wheel */
+  #wheel-svg { width: 100%; height: auto; display: block; touch-action: none; }
+  .chord-node { cursor: pointer; transition: transform 0.4s cubic-bezier(.4,.0,.2,1), opacity 0.3s; transform-origin: center; }
+  .chord-node:hover .chord-bg { filter: brightness(1.05); }
+  .chord-node.dim { opacity: 0.18; }
+  .chord-node.focal .chord-bg { stroke-width: 2.5; }
+  .chord-bg { transition: stroke-width 0.2s; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 11px; color: var(--text-2); margin-top: 12px; }
+  .legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; border: 0.5px solid var(--border); }
+  /* Tooltip */
+  #tooltip { position: fixed; pointer-events: none; background: var(--text); color: var(--bg); padding: 6px 10px; border-radius: 6px; font-size: 12px; line-height: 1.4; max-width: 260px; opacity: 0; transition: opacity 0.15s; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  #tooltip.show { opacity: 0.96; }
+  /* Info card */
+  .info-card { padding: 14px; background: var(--surface-2); border-radius: 8px; font-size: 13px; }
+  .info-card .ttl { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .info-card .fnc { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; margin-right: 6px; font-weight: 500; }
+  .info-card .meta { margin-top: 8px; font-size: 12px; color: var(--text-3); border-top: 0.5px solid var(--border); padding-top: 8px; }
+  /* Progression */
+  .prog-strip { display: flex; gap: 8px; flex-wrap: wrap; min-height: 64px; padding: 10px; background: var(--surface-2); border-radius: 8px; align-items: center; }
+  .prog-empty { color: var(--text-3); font-size: 13px; font-style: italic; padding: 8px; }
+  .prog-chip { position: relative; padding: 8px 12px; background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: 8px; font-size: 14px; font-weight: 500; cursor: grab; display: flex; flex-direction: column; align-items: center; min-width: 56px; transition: transform 0.15s, box-shadow 0.15s; }
+  .prog-chip:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .prog-chip.playing { background: var(--dom-fill); color: var(--dom-text); border-color: var(--dom-stroke); }
+  .prog-chip .roman { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+  .prog-chip .rm { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: 50%; font-size: 11px; line-height: 14px; text-align: center; cursor: pointer; opacity: 0; transition: opacity 0.15s; }
+  .prog-chip:hover .rm { opacity: 1; }
+  .prog-chip .rm:hover { background: #f4c0c0; }
+  .prog-arrow { color: var(--text-3); font-size: 14px; align-self: center; }
+  .prog-controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  .prog-quality { margin-top: 12px; padding: 10px 12px; background: var(--surface-2); border-radius: 8px; font-size: 12px; color: var(--text-2); }
+  .prog-quality .lbl { font-weight: 500; color: var(--text); }
+  /* Suggestions */
+  .sugg-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
+  .sugg-card { padding: 10px 12px; background: var(--surface); border: 0.5px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+  .sugg-card:hover { background: var(--surface-2); }
+  .sugg-card .head { display: flex; align-items: baseline; gap: 8px; }
+  .sugg-card .name { font-size: 15px; font-weight: 500; }
+  .sugg-card .tag { font-size: 10px; color: var(--text-3); padding: 1px 6px; border-radius: 999px; border: 0.5px solid var(--border); }
+  .sugg-card .why { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+  .sugg-card[data-strength="strong"] { border-left-color: #0F6E56; }
+  .sugg-card[data-strength="interesting"] { border-left-color: #534AB7; }
+  .sugg-card[data-strength="surprising"] { border-left-color: #993C1D; }
+  /* Tab export */
+  #export-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
+  #export-modal.show { display: flex; }
+  .modal-card { background: var(--surface); border-radius: 12px; padding: 20px 24px; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+  .modal-card h2 { margin: 0 0 12px; font-size: 18px; font-weight: 500; }
+  .modal-card pre { background: var(--bg); padding: 14px; border-radius: 6px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; white-space: pre; color: var(--text); border: 0.5px solid var(--border); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--text-2); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .help-row { font-size: 11px; color: var(--text-3); margin-top: 8px; }
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+  @media (max-width: 1024px) { .right-col { gap: 12px; } }
+</style>
+</head>
+<body>
+
+<div id="tooltip"></div>
+
+<div class="layout">
+  <header>
+    <h1>Harmony workbench</h1>
+    <p>Click chords to explore. Build progressions. Export tabs.</p>
+  </header>
+
+  <!-- LEFT COLUMN: wheel + controls -->
+  <div>
+    <div class="panel">
+      <div class="controls">
+        <label data-tip="The tonic — the chord everything resolves to. Changing this moves the whole map.">Key
+          <select id="key-sel">
+            <option value="C">C</option><option value="G">G</option><option value="D">D</option><option value="A">A</option><option value="E">E</option><option value="B">B</option><option value="F#">F♯</option><option value="Db">D♭</option><option value="Ab">A♭</option><option value="Eb">E♭</option><option value="Bb">B♭</option><option value="F">F</option>
+          </select>
+        </label>
+        <label data-tip="Major sounds bright/stable. Minor sounds darker/melancholic. Same notes, different gravity.">Mode
+          <select id="mode-sel"><option value="major">major</option><option value="minor">minor</option></select>
+        </label>
+        <span style="flex:1"></span>
+        <label class="layer-pill on" data-layer="diatonic" data-tip="The 7 chords built natively from the scale — your home harmonic vocabulary."><input type="checkbox" checked><span class="sw" style="background:var(--tonic-fill)"></span>Diatonic</label>
+        <label class="layer-pill" data-layer="secondary" data-tip="Dominant chords borrowed from other keys to briefly 'tonicise' a chord — e.g. V/V is the dominant of the dominant."><input type="checkbox"><span class="sw" style="background:var(--sec-fill)"></span>Secondary dominants</label>
+        <label class="layer-pill" data-layer="modal" data-tip="Chords borrowed from the parallel major/minor. Adds emotional colour without changing key — used heavily in pop, film, soul."><input type="checkbox"><span class="sw" style="background:var(--mod-fill)"></span>Modal interchange</label>
+        <label class="layer-pill" data-layer="tritone" data-tip="A dominant 7 chord a tritone away from V shares the same tritone interval, so it can substitute for V. Produces chromatic bass motion (e.g. D♭7→C)."><input type="checkbox"><span class="sw" style="background:var(--tt-fill)"></span>Tritone subs</label>
+        <label class="layer-pill" data-layer="mediant" data-tip="Chords whose roots are a major third away from the tonic. They share one note with the tonic and create that 'cinematic' shift — common in film scores, Radiohead, McCartney."><input type="checkbox"><span class="sw" style="background:var(--cm-fill)"></span>Chromatic mediants</label>
+      </div>
+      <svg id="wheel-svg" viewBox="0 0 720 720" role="img" xmlns="http://www.w3.org/2000/svg">
+        <title>Interactive harmony wheel</title>
+        <desc>Circle of fifths with diatonic, secondary, modal, tritone and chromatic mediant relationships. Click any chord to bring it to the centre.</desc>
+        <defs>
+          <marker id="arrow-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <g id="ring-bg"></g>
+        <g id="connections"></g>
+        <g id="nodes"></g>
+        <text id="centre-key" x="360" y="356" text-anchor="middle" font-size="28" font-weight="500" fill="currentColor"></text>
+        <text id="centre-mode" x="360" y="380" text-anchor="middle" font-size="13" fill="currentColor" opacity="0.6"></text>
+      </svg>
+      <div class="legend">
+        <span data-tip="Tonic chords (I, vi, iii) feel like 'home' — points of rest."><span class="sw" style="background:var(--tonic-fill)"></span>Tonic</span>
+        <span data-tip="Subdominant chords (IV, ii) set up motion — they 'depart' from the tonic."><span class="sw" style="background:var(--sub-fill)"></span>Subdominant</span>
+        <span data-tip="Dominant chords (V, vii°) create tension that pulls back to the tonic."><span class="sw" style="background:var(--dom-fill)"></span>Dominant</span>
+        <span data-tip="Secondary dominants are V chords of non-tonic targets."><span class="sw" style="background:var(--sec-fill)"></span>Secondary</span>
+        <span data-tip="Modal interchange = chords borrowed from the parallel mode."><span class="sw" style="background:var(--mod-fill)"></span>Borrowed</span>
+        <span data-tip="Tritone subs slide chromatically into resolution."><span class="sw" style="background:var(--tt-fill)"></span>Tritone sub</span>
+        <span data-tip="Chromatic mediants — roots a major third apart, share one common tone."><span class="sw" style="background:var(--cm-fill)"></span>Chromatic mediant</span>
+      </div>
+      <div class="help-row">Hover anything for a quick explanation. Click any chord to focus it and reveal its strongest relationships.</div>
+    </div>
+
+    <!-- Progression panel -->
+    <div class="panel" style="margin-top:16px">
+      <h2 class="section-title">Progression</h2>
+      <div class="prog-strip" id="prog-strip">
+        <div class="prog-empty">Click chords on the wheel to add them here.</div>
+      </div>
+      <div class="prog-controls">
+        <button class="btn primary" id="play-btn" data-tip="Play the progression with voice-led triads.">▶ Play</button>
+        <button class="btn" id="stop-btn" data-tip="Stop playback.">■ Stop</button>
+        <label data-tip="Speed of playback in beats per minute.">Tempo
+          <input type="range" id="tempo" min="40" max="180" value="80" style="vertical-align:middle">
+          <span id="tempo-val" style="min-width:32px;display:inline-block">80</span>
+        </label>
+        <span style="flex:1"></span>
+        <button class="btn" id="copy-prog" data-tip="Copy progression as Roman numerals and chord names.">Copy</button>
+        <button class="btn" id="clear-prog" data-tip="Remove all chords from the progression.">Clear</button>
+        <button class="btn" id="export-btn" data-tip="Export progression with guitar tab voicings.">Export ↗</button>
+      </div>
+      <div class="prog-quality" id="prog-quality" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: info + suggestions -->
+  <div class="right-col">
+    <div class="panel">
+      <h2 class="section-title">Selected chord</h2>
+      <div class="info-card" id="info-card">
+        <div class="ttl">No chord selected</div>
+        <div>Click a chord on the wheel. It will move to the centre and surround itself with its closest harmonic neighbours.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title">Suggested next chords</h2>
+      <div id="sugg-help" style="font-size:12px;color:var(--text-3);margin-bottom:4px">Build a progression to see context-aware suggestions.</div>
+      <div class="sugg-grid" id="sugg-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Export modal -->
+<div id="export-modal">
+  <div class="modal-card">
+    <h2>Progression export</h2>
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:10px">Guitar tab voicings (standard tuning, low E to high e). Open or common barre shapes preferred.</div>
+    <pre id="export-text"></pre>
+    <div class="modal-actions">
+      <button class="btn" id="copy-export">Copy</button>
+      <button class="btn" id="download-export">Download .txt</button>
+      <button class="btn primary" id="close-export">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<script>
+/* ============================================================
+   HARMONY WORKBENCH
+   ============================================================ */
+
+// ---------- Music data ----------
+const NOTES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const COF_MAJOR = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
+
+function ni(n){
+  n = String(n).replace('♯','#').replace('♭','b');
+  let i = NOTES_SHARP.indexOf(n); if(i>=0) return i;
+  i = NOTES_FLAT.indexOf(n); if(i>=0) return i;
+  return -1;
+}
+function nm(i, flat){ i=((i%12)+12)%12; return flat?NOTES_FLAT[i]:NOTES_SHARP[i]; }
+function preferFlat(rootName){ return rootName.includes('b') || rootName === 'F'; }
+function fmt(n){ return n.replace('#','♯').replace('b','♭'); }
+function chordLabel(root,qual){
+  const r = fmt(root);
+  if(qual==='dim') return r+'°';
+  if(qual==='dim7') return r+'°7';
+  if(qual==='m7b5') return r+'ø7';
+  return r + qual;
+}
+function diatonic(root, mode){
+  const r = ni(root);
+  const pf = preferFlat(root);
+  const majIv=[0,2,4,5,7,9,11], minIv=[0,2,3,5,7,8,10];
+  const majQ=['','m','m','','','m','dim'];
+  const minQ=['m','dim','','m','m','','']; // natural minor
+  const majR=['I','ii','iii','IV','V','vi','vii°'];
+  const minR=['i','ii°','III','iv','v','VI','VII'];
+  const fn  =['T','S','T','S','D','T','D'];
+  const ints = mode==='major'?majIv:minIv;
+  const qual = mode==='major'?majQ:minQ;
+  const rom  = mode==='major'?majR:minR;
+  return ints.map((iv,i)=>({
+    root: nm(r+iv,pf), qual: qual[i], roman: rom[i], func: fn[i], degree: i+1
+  }));
+}
+function chordIntervals(qual){
+  switch(qual){
+    case '':     return [0,4,7];
+    case 'm':    return [0,3,7];
+    case 'dim':  return [0,3,6];
+    case '7':    return [0,4,7,10];
+    case 'maj7': return [0,4,7,11];
+    case 'm7':   return [0,3,7,10];
+    case 'dim7': return [0,3,6,9];
+    case 'm7b5': return [0,3,6,10];
+    default:     return [0,4,7];
+  }
+}
+function chordNotes(root, qual, octave){
+  octave = octave || 4;
+  const r = ni(root);
+  const pf = preferFlat(root);
+  return chordIntervals(qual).map(iv => {
+    const idx = r+iv;
+    const oct = octave + Math.floor(idx/12);
+    return nm(idx,pf) + oct;
+  });
+}
+
+// ---------- Geometry ----------
+const CX = 360, CY = 360;
+const R_OUTER = 285;
+const R_INNER = 220;
+const NODE_W_OUTER = 64, NODE_H_OUTER = 40;
+const NODE_W_INNER = 54, NODE_H_INNER = 34;
+
+function polar(angle, r){
+  const rad = (angle - 90) * Math.PI / 180;
+  return { x: CX + r*Math.cos(rad), y: CY + r*Math.sin(rad) };
+}
+
+// ---------- State ----------
+const state = {
+  key: 'C', mode: 'major',
+  layers: { diatonic:true, secondary:false, modal:false, tritone:false, mediant:false },
+  focal: null,            // currently centred chord
+  progression: [],        // [{root, qual, roman, label}]
+  playing: false,
+  playToken: 0,
+};
+
+// ---------- Audio ----------
+let synth = null;
+async function ensureSynth(){
+  if(synth) return;
+  await Tone.start();
+  synth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type:'triangle8' },
+    envelope: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.9 }
+  }).toDestination();
+  synth.volume.value = -10;
+}
+async function playChordOnce(root, qual, dur){
+  await ensureSynth();
+  dur = dur || '2n';
+  const notes = chordNotes(root, qual, 4);
+  synth.triggerAttackRelease(notes, dur);
+}
+
+// Voice-led playback for the progression
+function voiceLead(chords){
+  // chords: [{root, qual}]. Returns array of voicings (each = [midi notes])
+  if(!chords.length) return [];
+  const out = [];
+  let prev = null;
+  for(const c of chords){
+    const pcs = chordIntervals(c.qual).map(iv => (ni(c.root)+iv)%12);
+    let best = null, bestCost = Infinity;
+    // try voicings: place each pitch class in octaves 3-5
+    function search(idx, voicing){
+      if(voicing.length === pcs.length){
+        // compute cost vs prev top voice and against root anchor
+        let cost = 0;
+        // keep top voice movement minimal
+        if(prev){
+          // pair each prev note to nearest new note
+          for(const pn of prev){
+            const dists = voicing.map(v => Math.abs(v - pn));
+            cost += Math.min(...dists);
+          }
+        }
+        // prefer compact spread
+        const spread = Math.max(...voicing) - Math.min(...voicing);
+        cost += Math.max(0, spread - 14) * 0.5;
+        if(cost < bestCost){ bestCost = cost; best = voicing.slice(); }
+        return;
+      }
+      const pc = pcs[idx];
+      for(let oct=4; oct<=5; oct++){
+        const midi = 12*(oct+1) + pc; // MIDI: C4 = 60 -> oct=4, pc=0 -> 60
+        // root anchor at bottom for first chord
+        if(idx===0 && oct>4) continue;
+        voicing.push(midi);
+        search(idx+1, voicing);
+        voicing.pop();
+      }
+    }
+    search(0, []);
+    if(!best) best = pcs.map((pc,i) => 12*(4+1)+pc);
+    out.push(best);
+    prev = best;
+  }
+  return out;
+}
+function midiToName(m){
+  const oct = Math.floor(m/12)-1;
+  const pc = ((m%12)+12)%12;
+  return NOTES_SHARP[pc] + oct;
+}
+
+async function playProgression(){
+  if(!state.progression.length) return;
+  await ensureSynth();
+  const token = ++state.playToken;
+  state.playing = true;
+  const bpm = parseInt(document.getElementById('tempo').value,10);
+  const beatMs = 60000/bpm;
+  const voicings = voiceLead(state.progression);
+  const chipEls = document.querySelectorAll('.prog-chip');
+  for(let i=0;i<voicings.length;i++){
+    if(token!==state.playToken) return;
+    chipEls.forEach(c=>c.classList.remove('playing'));
+    if(chipEls[i]) chipEls[i].classList.add('playing');
+    const v = voicings[i].map(midiToName);
+    synth.triggerAttackRelease(v, (beatMs*1.8)/1000);
+    await new Promise(r=>setTimeout(r, beatMs*2));
+  }
+  chipEls.forEach(c=>c.classList.remove('playing'));
+  state.playing = false;
+}
+function stopPlayback(){
+  state.playToken++;
+  state.playing = false;
+  if(synth) synth.releaseAll();
+  document.querySelectorAll('.prog-chip').forEach(c=>c.classList.remove('playing'));
+}
+
+// ---------- Tooltip ----------
+const tooltipEl = document.getElementById('tooltip');
+function showTip(text, x, y){
+  tooltipEl.textContent = text;
+  tooltipEl.classList.add('show');
+  const rect = tooltipEl.getBoundingClientRect();
+  const pad = 8;
+  let left = x + 14, top = y + 14;
+  if(left + rect.width > window.innerWidth - pad) left = x - rect.width - 14;
+  if(top + rect.height > window.innerHeight - pad) top = y - rect.height - 14;
+  tooltipEl.style.left = left + 'px';
+  tooltipEl.style.top = top + 'px';
+}
+function hideTip(){ tooltipEl.classList.remove('show'); }
+document.addEventListener('mousemove', e => {
+  const t = e.target.closest('[data-tip]');
+  if(t){ showTip(t.dataset.tip, e.clientX, e.clientY); } else { hideTip(); }
+});
+document.addEventListener('mouseleave', hideTip);
+
+// ---------- Wheel rendering ----------
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs){
+  const e = document.createElementNS(SVG_NS, tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+function colorFor(meta){
+  // meta: { func, kind }
+  if(meta.kind==='secondary')  return { fill:'var(--sec-fill)',  stroke:'var(--sec-stroke)',  text:'var(--sec-text)'  };
+  if(meta.kind==='modal')      return { fill:'var(--mod-fill)',  stroke:'var(--mod-stroke)',  text:'var(--mod-text)'  };
+  if(meta.kind==='tritone')    return { fill:'var(--tt-fill)',   stroke:'var(--tt-stroke)',   text:'var(--tt-text)'   };
+  if(meta.kind==='mediant')    return { fill:'var(--cm-fill)',   stroke:'var(--cm-stroke)',   text:'var(--cm-text)'   };
+  if(meta.func==='T')          return { fill:'var(--tonic-fill)',stroke:'var(--tonic-stroke)',text:'var(--tonic-text)'};
+  if(meta.func==='S')          return { fill:'var(--sub-fill)',  stroke:'var(--sub-stroke)',  text:'var(--sub-text)'  };
+  if(meta.func==='D')          return { fill:'var(--dom-fill)',  stroke:'var(--dom-stroke)',  text:'var(--dom-text)'  };
+  return { fill:'var(--neu-fill)', stroke:'var(--neu-stroke)', text:'var(--neu-text)' };
+}
+
+// Build the full list of chords to render for the current key + active layers
+function buildChordSet(){
+  const out = [];
+  const diaMaj = diatonic(state.key, 'major');
+  const diaMin = diatonic(state.key, 'minor');
+  const dia = state.mode==='major'? diaMaj : diaMin;
+  const diaMap = new Map();
+  dia.forEach(c=>diaMap.set(c.root+c.qual, c));
+
+  // All 12 majors & 12 minors get plotted, but only those diatonic to current key get a function color
+  COF_MAJOR.forEach((root, i)=>{
+    const info = diaMap.get(root+'');
+    const meta = info? { func: info.func, kind:'diatonic', roman: info.roman } : { kind:'neutral' };
+    out.push({ root, qual:'', label: chordLabel(root,''), ring:'outer', cofIdx:i, meta });
+  });
+  COF_MAJOR.forEach((root, i)=>{
+    // Relative minor of each major
+    const minorRoot = nm(ni(root)-3, preferFlat(root));
+    const info = diaMap.get(minorRoot+'m');
+    const meta = info? { func: info.func, kind:'diatonic', roman: info.roman } : { kind:'neutral' };
+    out.push({ root: minorRoot, qual:'m', label: chordLabel(minorRoot,'m'), ring:'inner', cofIdx:i, meta });
+  });
+
+  // Layered chords (extras)
+  if(state.layers.secondary){
+    // V of each non-tonic diatonic chord (skip vii° which doesn't get tonicised normally)
+    [2,3,4,5,6].forEach(deg=>{
+      const target = dia[deg-1];
+      if(!target) return;
+      if(target.qual==='dim') return;
+      const dom = nm(ni(target.root)+7, preferFlat(target.root));
+      out.push({
+        root: dom, qual:'7', label: chordLabel(dom,'7'),
+        ring:'extra', cofIdx: COF_MAJOR.indexOf(target.root),
+        offset: 56,
+        meta: { kind:'secondary', roman:'V/'+target.roman, target: target }
+      });
+    });
+  }
+  if(state.layers.modal){
+    const parallel = state.mode==='major'? diatonic(state.key,'minor') : diatonic(state.key,'major');
+    const picks = state.mode==='major'
+      ? [{idx:2,roman:'♭III'},{idx:5,roman:'♭VI'},{idx:6,roman:'♭VII'},{idx:3,roman:'iv'}]
+      : [{idx:2,roman:'III'}, {idx:5,roman:'VI'}, {idx:6,roman:'VII'}, {idx:3,roman:'IV'}];
+    picks.forEach(p=>{
+      const c = parallel[p.idx];
+      const cofIdx = COF_MAJOR.indexOf(c.root);
+      out.push({
+        root: c.root, qual: c.qual, label: chordLabel(c.root, c.qual),
+        ring:'extra', cofIdx: cofIdx>=0?cofIdx:0,
+        offset: -56,
+        offsetAngle: cofIdx<0 ? 270 : null,
+        meta: { kind:'modal', roman: p.roman }
+      });
+    });
+  }
+  if(state.layers.tritone){
+    // sub V/I  and sub V/V (if secondary also active, makes the chain visible)
+    const V = dia[4];
+    if(V){
+      const ttRoot = nm(ni(V.root)+6, true);
+      const cofIdx = (COF_MAJOR.indexOf(V.root)+6)%12;
+      out.push({ root: ttRoot, qual:'7', label: chordLabel(ttRoot,'7'),
+        ring:'extra', cofIdx, offset: 56,
+        meta:{ kind:'tritone', roman:'subV/I' } });
+    }
+    // sub of V/V: tritone of (V of V)
+    const Vroot = V ? V.root : null;
+    if(Vroot){
+      const VVroot = nm(ni(Vroot)+7, preferFlat(Vroot));
+      const ttRoot = nm(ni(VVroot)+6, true);
+      const cofIdx = (COF_MAJOR.indexOf(VVroot)+6)%12;
+      if(cofIdx>=0){
+        out.push({ root: ttRoot, qual:'7', label: chordLabel(ttRoot,'7'),
+          ring:'extra', cofIdx, offset: 56,
+          meta:{ kind:'tritone', roman:'subV/V' } });
+      }
+    }
+  }
+  if(state.layers.mediant){
+    // Chromatic mediants of tonic: major 3rd up/down, with opposite quality
+    const tonic = dia[0];
+    const candidates = [
+      { iv: 4,  qual: tonic.qual==='m'?'':'',     label:'♭III/III' },  // up M3
+      { iv: -4, qual: tonic.qual==='m'?'':'',     label:'♭VI/VI'  },  // down M3
+      { iv: 4,  qual: tonic.qual==='m'?'m':'m',   label:'iii/♯iii'},
+      { iv: -4, qual: tonic.qual==='m'?'m':'m',   label:'vi/♭vi' },
+    ];
+    candidates.forEach((cand,j)=>{
+      const root = nm(ni(tonic.root)+cand.iv, preferFlat(tonic.root));
+      // skip if it's the literal diatonic chord
+      const exists = dia.find(d=>d.root===root && d.qual===cand.qual);
+      if(exists) return;
+      const cofIdx = COF_MAJOR.indexOf(root);
+      out.push({
+        root, qual: cand.qual, label: chordLabel(root, cand.qual),
+        ring:'extra', cofIdx: cofIdx>=0?cofIdx:0,
+        offset: -56,
+        meta:{ kind:'mediant', roman: cand.label }
+      });
+    });
+  }
+  return out;
+}
+
+// Place a chord either on the wheel (radial) or focal-orbit when focused
+function chordPosition(chord, isFocal){
+  if(isFocal) return { x: CX, y: CY, scale: 1.2 };
+  if(!state.focal){
+    if(chord.ring==='outer') return { ...polar(chord.cofIdx*30, R_OUTER), scale:1 };
+    if(chord.ring==='inner') return { ...polar(chord.cofIdx*30, R_INNER), scale:0.9 };
+    if(chord.ring==='extra') {
+      const ang = (chord.offsetAngle!=null? chord.offsetAngle : (chord.cofIdx*30));
+      const r = R_OUTER + (chord.offset||50);
+      return { ...polar(ang, r), scale:0.85 };
+    }
+  }
+  // Focal mode: arrange related chords around focal centre by relationship
+  return arrangeAroundFocal(chord);
+}
+
+function relationshipTo(chord, focal){
+  // Returns an angle (deg) and category for the chord's relation to focal
+  if(chord.label === focal.label) return { angle: 0, kind:'self', label:'(this chord)' };
+
+  // Resolution targets / dominants
+  // If focal is V/x or subV/x, this chord is the target if matches
+  const dia = diatonic(state.key, state.mode);
+  const diaMap = new Map(); dia.forEach(c=>diaMap.set(c.root+c.qual,c));
+  // 1. If focal -> chord is a V→I style resolution
+  // The dominant of chord.root is at +7 semitones
+  const chordRootIdx = ni(chord.root);
+  const focalRootIdx = ni(focal.root);
+  const diff = ((chordRootIdx - focalRootIdx + 12) % 12);
+  // Common relationship buckets
+  if(focal.meta && focal.meta.kind==='secondary' && focal.meta.target){
+    if(chord.root===focal.meta.target.root && chord.qual===focal.meta.target.qual){
+      return { angle: 0, kind:'resolution', label:'Resolves here (target of secondary dominant)' };
+    }
+  }
+  if(focal.meta && focal.meta.kind==='tritone'){
+    // resolves a half-step down
+    const expectedTarget = nm(focalRootIdx-1, preferFlat(focal.root));
+    if(chord.root===expectedTarget){
+      return { angle: 0, kind:'resolution', label:'Slides chromatically into this chord' };
+    }
+  }
+  // 2. Perfect-fifth motion (very strong)
+  if(diff === 7) return { angle: 30,  kind:'fifth-up',  label:'A fifth up — strong forward motion' };
+  if(diff === 5) return { angle: 330, kind:'fifth-down',label:'A fourth up / fifth down — also strong' };
+  // 3. Whole step (modal motion, common in pop)
+  if(diff === 2) return { angle: 90,  kind:'step',      label:'Whole step up — adds momentum' };
+  if(diff === 10)return { angle: 270, kind:'step',      label:'Whole step down — gentle descent' };
+  // 4. Major/minor third (mediant / submediant)
+  if(diff === 3) return { angle: 60,  kind:'mediant',   label:'Minor third up — shared common tones' };
+  if(diff === 9) return { angle: 300, kind:'mediant',   label:'Minor third down' };
+  if(diff === 4) return { angle: 120, kind:'mediant',   label:'Major third — chromatic mediant feel' };
+  if(diff === 8) return { angle: 240, kind:'mediant',   label:'Major third down — descending shift' };
+  // 5. Tritone (most distant)
+  if(diff === 6) return { angle: 180, kind:'tritone',   label:'Tritone away — most chromatic relationship' };
+  // 6. Semitone
+  if(diff === 1) return { angle: 150, kind:'chromatic', label:'A semitone up — chromatic neighbour' };
+  if(diff === 11)return { angle: 210, kind:'chromatic', label:'A semitone down — chromatic neighbour' };
+  return { angle: 180, kind:'other', label:'' };
+}
+function arrangeAroundFocal(chord){
+  if(!state.focal) return polar(0, R_OUTER);
+  const rel = relationshipTo(chord, state.focal);
+  if(rel.kind==='self') return { x: CX, y: CY, scale: 1.2 };
+  // Distance depends on kind
+  let r;
+  switch(rel.kind){
+    case 'fifth-up': case 'fifth-down': r = 130; break;
+    case 'resolution': r = 95; break;
+    case 'step': r = 160; break;
+    case 'mediant': r = 190; break;
+    case 'chromatic': r = 220; break;
+    case 'tritone': r = 250; break;
+    default: r = 280;
+  }
+  // Slight stagger to prevent overlap when many chords share the same angle
+  const stagger = (Math.abs(ni(chord.root) - ni(state.focal.root)) % 5) * 3;
+  return { ...polar(rel.angle, r + stagger), scale: 0.85, relLabel: rel.label, relKind: rel.kind };
+}
+
+// ---------- Rendering ----------
+function render(){
+  const svg = document.getElementById('wheel-svg');
+  const ringBg = document.getElementById('ring-bg');
+  const nodesG = document.getElementById('nodes');
+  const connsG = document.getElementById('connections');
+  ringBg.innerHTML = ''; connsG.innerHTML = '';
+
+  // Background rings (only when not focused)
+  if(!state.focal){
+    const outerRing = svgEl('circle', { cx:CX, cy:CY, r:R_OUTER, fill:'none', stroke:'var(--border)', 'stroke-width':'0.5' });
+    const innerRing = svgEl('circle', { cx:CX, cy:CY, r:R_INNER, fill:'none', stroke:'var(--border)', 'stroke-width':'0.5','stroke-dasharray':'2 3' });
+    ringBg.appendChild(outerRing); ringBg.appendChild(innerRing);
+  } else {
+    // soft focal rings
+    [95,130,190,250].forEach(r=>{
+      const c = svgEl('circle', { cx:CX, cy:CY, r, fill:'none', stroke:'var(--border)', 'stroke-width':'0.5','stroke-dasharray':'2 4', opacity:'0.5'});
+      ringBg.appendChild(c);
+    });
+  }
+
+  // Centre label
+  document.getElementById('centre-key').textContent = state.focal ? '' : fmt(state.key);
+  document.getElementById('centre-mode').textContent = state.focal ? '' : state.mode;
+
+  const chords = buildChordSet();
+  // De-dupe by label
+  const seen = new Set();
+  const uniqueChords = chords.filter(c => {
+    if(seen.has(c.label)) return false;
+    seen.add(c.label); return true;
+  });
+
+  // Render or update node groups
+  const existingNodes = new Map();
+  nodesG.querySelectorAll('.chord-node').forEach(n => existingNodes.set(n.dataset.label, n));
+
+  // Connections (only when focused)
+  if(state.focal){
+    drawFocalConnections(connsG, uniqueChords);
+  }
+
+  uniqueChords.forEach(chord => {
+    const isFocal = state.focal && state.focal.label === chord.label;
+    const pos = chordPosition(chord, isFocal);
+    let g = existingNodes.get(chord.label);
+    const w = chord.ring==='outer' ? NODE_W_OUTER : (chord.ring==='inner'?NODE_W_INNER:NODE_W_INNER);
+    const h = chord.ring==='outer' ? NODE_H_OUTER : (chord.ring==='inner'?NODE_H_INNER:NODE_H_INNER);
+    const W = w * pos.scale, H = h * pos.scale;
+    const col = colorFor(chord.meta);
+    if(!g){
+      g = svgEl('g', { class:'chord-node', 'data-label':chord.label });
+      const bg = svgEl('rect', { class:'chord-bg', x:-W/2, y:-H/2, width:W, height:H, rx:8, fill:col.fill, stroke:col.stroke, 'stroke-width':'1' });
+      const t1 = svgEl('text', { x:0, y:-2, 'text-anchor':'middle','dominant-baseline':'central', 'font-size': 14*pos.scale, 'font-weight':'500', fill:col.text });
+      t1.textContent = chord.label;
+      const t2 = svgEl('text', { x:0, y: H/2 - 8*pos.scale, 'text-anchor':'middle','dominant-baseline':'central', 'font-size': 9.5*pos.scale, fill:col.text, opacity:'0.75' });
+      t2.textContent = chord.meta.roman || '';
+      g.appendChild(bg); g.appendChild(t1); g.appendChild(t2);
+      nodesG.appendChild(g);
+      g._bg = bg; g._t1 = t1; g._t2 = t2;
+    } else {
+      // update existing
+      const bg = g.querySelector('.chord-bg');
+      const ts = g.querySelectorAll('text');
+      bg.setAttribute('x', -W/2); bg.setAttribute('y', -H/2);
+      bg.setAttribute('width', W); bg.setAttribute('height', H);
+      bg.setAttribute('fill', col.fill); bg.setAttribute('stroke', col.stroke);
+      ts[0].setAttribute('font-size', 14*pos.scale);
+      ts[0].setAttribute('fill', col.text);
+      ts[0].textContent = chord.label;
+      ts[1].setAttribute('y', H/2 - 8*pos.scale);
+      ts[1].setAttribute('font-size', 9.5*pos.scale);
+      ts[1].setAttribute('fill', col.text);
+      ts[1].textContent = chord.meta.roman || '';
+    }
+    g.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+    g.classList.toggle('focal', isFocal);
+
+    // tooltip
+    const tip = describeChordShort(chord, pos);
+    g.setAttribute('data-tip', tip);
+
+    g.onmouseenter = (e) => { showTip(tip, e.clientX, e.clientY); };
+    g.onmousemove = (e) => { showTip(tip, e.clientX, e.clientY); };
+    g.onmouseleave = hideTip;
+    g.onclick = () => onChordClick(chord);
+    existingNodes.delete(chord.label);
+  });
+  // Remove nodes no longer present
+  existingNodes.forEach(n => n.remove());
+
+  renderInfoCard();
+  renderProgression();
+  renderSuggestions();
+}
+
+function describeChordShort(chord, pos){
+  let label = chord.label;
+  if(chord.meta.roman) label += ' (' + chord.meta.roman + ')';
+  if(pos && pos.relLabel) label += ' — ' + pos.relLabel;
+  else {
+    if(chord.meta.kind==='secondary') label += ' — secondary dominant';
+    else if(chord.meta.kind==='modal') label += ' — borrowed from parallel mode';
+    else if(chord.meta.kind==='tritone') label += ' — tritone substitution';
+    else if(chord.meta.kind==='mediant') label += ' — chromatic mediant';
+    else if(chord.meta.func==='T') label += ' — tonic (rest)';
+    else if(chord.meta.func==='S') label += ' — subdominant (departure)';
+    else if(chord.meta.func==='D') label += ' — dominant (tension)';
+  }
+  label += ' — click to focus';
+  return label;
+}
+
+function drawFocalConnections(parent, chords){
+  if(!state.focal) return;
+  chords.forEach(chord=>{
+    if(chord.label===state.focal.label) return;
+    const pos = chordPosition(chord, false);
+    const rel = relationshipTo(chord, state.focal);
+    if(rel.kind==='other') return;
+    // Strength influences line weight
+    let strokeW = 0.7, color = 'var(--neu-stroke)', dash = '2 3';
+    if(rel.kind==='fifth-up' || rel.kind==='fifth-down'){ strokeW = 1.4; color = 'var(--accent)'; dash=''; }
+    else if(rel.kind==='resolution'){ strokeW = 1.6; color = 'var(--dom-stroke)'; dash=''; }
+    else if(rel.kind==='step'){ strokeW = 1; color = 'var(--tonic-stroke)'; dash=''; }
+    else if(rel.kind==='mediant'){ strokeW = 0.9; color = 'var(--cm-stroke)'; dash='1 4'; }
+    else if(rel.kind==='tritone'){ strokeW = 0.8; color = 'var(--tt-stroke)'; dash='3 3'; }
+    else if(rel.kind==='chromatic'){ strokeW = 0.7; color = 'var(--mod-stroke)'; dash='1 3'; }
+    const line = svgEl('line', { x1: CX, y1: CY, x2: pos.x, y2: pos.y, stroke: color, 'stroke-width': strokeW, 'stroke-dasharray': dash, opacity: '0.6' });
+    parent.appendChild(line);
+  });
+}
+
+// ---------- Click handling ----------
+function onChordClick(chord){
+  // If already focal, add to progression instead
+  if(state.focal && state.focal.label === chord.label){
+    addToProgression(chord);
+    playChordOnce(chord.root, chord.qual);
+    return;
+  }
+  state.focal = chord;
+  render();
+  playChordOnce(chord.root, chord.qual);
+}
+
+// ---------- Info card ----------
+function renderInfoCard(){
+  const box = document.getElementById('info-card');
+  if(!state.focal){
+    box.innerHTML = `<div class="ttl">No chord selected</div>
+      <div>Click a chord on the wheel. It will move to the centre and surround itself with its closest harmonic neighbours.</div>`;
+    return;
+  }
+  const chord = state.focal;
+  const dia = diatonic(state.key, state.mode);
+  const diaMap = new Map(); dia.forEach(c=>diaMap.set(c.root+c.qual,c));
+  const info = diaMap.get(chord.root+chord.qual);
+  const fnNames = { T:'Tonic', S:'Subdominant', D:'Dominant' };
+  let badge='', funcText='', goes='';
+  if(info){
+    const fnCol = info.func==='T'?'var(--tonic-fill)':info.func==='S'?'var(--sub-fill)':'var(--dom-fill)';
+    const fnTx  = info.func==='T'?'var(--tonic-text)':info.func==='S'?'var(--sub-text)':'var(--dom-text)';
+    badge = `<span class="fnc" style="background:${fnCol};color:${fnTx}">${fnNames[info.func]}</span>`;
+    funcText = `Diatonic ${info.roman} in ${fmt(state.key)} ${state.mode}.`;
+    if(state.mode==='major'){
+      const moves = { 1:'Home. Common moves: I→IV, I→V, I→vi.', 2:'Pulls strongly to V (ii–V–I is the most common jazz cadence).', 3:'Gentle move to vi or IV; can substitute for I.', 4:'Plagal resolve to I, or set up V (IV–V–I).', 5:'Wants to resolve to I, or deceptively to vi.', 6:'Pivots beautifully to ii or IV. The "sad-but-not-sad" chord.', 7:'Leading tone tension. Almost always goes to I.' };
+      goes = moves[info.degree] || '';
+    } else {
+      const moves = { 1:'Home. Common moves: i→iv, i→VI, i→VII.', 2:'Pulls to v (ii°–v–i).', 3:'Relative major. Pivot to VI.', 4:'iv–i for the classic melancholic cadence. Or iv→V (raised) for a stronger pull.', 5:'Minor v sounds modal/Dorian-tinged; raise to major V for stronger tension.', 6:'Pivots to ii° or v. Major-sounding moment in a minor key.', 7:'The flat-seven. Classic rock VII–i cadence (e.g. Stairway).' };
+      goes = moves[info.degree] || '';
+    }
+  } else if(chord.meta.kind==='secondary'){
+    badge = `<span class="fnc" style="background:var(--sec-fill);color:var(--sec-text)">Secondary dominant</span>`;
+    funcText = `Borrows dominant function to tonicise ${chord.meta.roman.slice(2)}.`;
+    goes = `Resolves to ${chord.meta.roman.slice(2)} as if briefly in a new key.`;
+  } else if(chord.meta.kind==='tritone'){
+    badge = `<span class="fnc" style="background:var(--tt-fill);color:var(--tt-text)">Tritone substitute</span>`;
+    funcText = `A dominant 7 a tritone away from V — shares the same tritone interval (the active dissonance).`;
+    goes = chord.meta.roman==='subV/I' ? 'Slides chromatically down a semitone to the tonic.' : 'Slides chromatically down a semitone to V.';
+  } else if(chord.meta.kind==='modal'){
+    badge = `<span class="fnc" style="background:var(--mod-fill);color:var(--mod-text)">Modal interchange</span>`;
+    funcText = `Borrowed from parallel ${state.mode==='major'?'minor':'major'}.`;
+    goes = 'Adds emotional colour without leaving the key. Common in pop, soul and cinematic harmony.';
+  } else if(chord.meta.kind==='mediant'){
+    badge = `<span class="fnc" style="background:var(--cm-fill);color:var(--cm-text)">Chromatic mediant</span>`;
+    funcText = `Root a major or minor third from tonic, sharing one common tone.`;
+    goes = 'Creates a "lifted" or "cinematic" shift — used by McCartney, Radiohead, film scores.';
+  } else {
+    badge = '';
+    funcText = `Not diatonic to ${fmt(state.key)} ${state.mode}.`;
+    goes = 'Can still be borrowed for colour, or used as a pivot to modulate.';
+  }
+  // Notes
+  const notes = chordNotes(chord.root, chord.qual, 4).map(n => fmt(n.replace(/\d+$/,''))).join(' · ');
+  box.innerHTML = `
+    <div class="ttl">${chord.label} ${chord.meta.roman?`<span style="color:var(--text-3);font-weight:400;font-size:13px">(${chord.meta.roman})</span>`:''}</div>
+    <div>${badge}${funcText}</div>
+    <div class="meta">${goes}</div>
+    <div class="meta">Notes: ${notes}</div>
+    <div style="margin-top:10px"><button class="btn" id="add-focal" data-tip="Append this chord to your progression.">+ Add to progression</button></div>
+  `;
+  const btn = document.getElementById('add-focal');
+  if(btn) btn.onclick = ()=>{ addToProgression(chord); playChordOnce(chord.root, chord.qual); };
+}
+
+// ---------- Progression ----------
+function addToProgression(chord){
+  state.progression.push({
+    root: chord.root, qual: chord.qual,
+    label: chord.label,
+    roman: chord.meta && chord.meta.roman ? chord.meta.roman : romanFor(chord)
+  });
+  renderProgression();
+  renderSuggestions();
+}
+function romanFor(chord){
+  const dia = diatonic(state.key, state.mode);
+  const found = dia.find(c=>c.root===chord.root && c.qual===chord.qual);
+  return found ? found.roman : '';
+}
+function renderProgression(){
+  const strip = document.getElementById('prog-strip');
+  if(!state.progression.length){
+    strip.innerHTML = '<div class="prog-empty">Click chords on the wheel to add them here.</div>';
+    document.getElementById('prog-quality').style.display='none';
+    return;
+  }
+  strip.innerHTML = '';
+  state.progression.forEach((c, i)=>{
+    const chip = document.createElement('div');
+    chip.className = 'prog-chip';
+    chip.dataset.idx = i;
+    chip.dataset.tip = 'Click to hear, drag handle to remove';
+    chip.innerHTML = `<div>${c.label}</div><div class="roman">${c.roman||''}</div><div class="rm" data-tip="Remove this chord">×</div>`;
+    chip.onclick = (e)=>{
+      if(e.target.classList.contains('rm')) return;
+      playChordOnce(c.root, c.qual);
+    };
+    chip.querySelector('.rm').onclick = (e)=>{
+      e.stopPropagation();
+      state.progression.splice(i,1);
+      renderProgression(); renderSuggestions();
+    };
+    strip.appendChild(chip);
+    if(i<state.progression.length-1){
+      const a = document.createElement('div');
+      a.className = 'prog-arrow';
+      a.textContent = '→';
+      strip.appendChild(a);
+    }
+  });
+  // Qualitative description
+  const q = describeProgression(state.progression);
+  const qbox = document.getElementById('prog-quality');
+  if(q){
+    qbox.style.display='block';
+    qbox.innerHTML = `<div class="lbl">${q.title}</div><div style="margin-top:4px">${q.body}</div>`;
+  } else {
+    qbox.style.display='none';
+  }
+}
+
+function describeProgression(prog){
+  if(prog.length < 2) return null;
+  const romans = prog.map(c=>c.roman||'?').join(' – ');
+  // Detect a few canonical patterns (major mode)
+  const pat = prog.map(c => (c.roman||'').replace('°','')).join(',');
+  const known = {
+    'I,V,vi,IV': { t:'The "pop" loop (axis of awesome)', b:'Used in hundreds of hits. Cycles between two tonic-flavoured chords and two subdominant-flavoured chords, so it never quite resolves — perfect for endless verses.' },
+    'vi,IV,I,V': { t:'Sensitive female chord progression', b:'Same axis as I–V–vi–IV but starts on the relative minor. Wistful, introspective opening.' },
+    'I,IV,V,I':  { t:'Classic cadential progression', b:'The 18th-century textbook cadence. Strong subdominant→dominant→tonic motion.' },
+    'I,vi,IV,V': { t:'\'50s doo-wop progression', b:'Stand By Me, Earth Angel, every prom slow-dance. Built on the descending vi-IV step.' },
+    'ii,V,I':    { t:'ii–V–I', b:'The bedrock jazz cadence. Each chord moves down a perfect fifth — the strongest possible voice leading.' },
+    'I,V,vi,iii,IV,I,IV,V': { t:'Canon progression', b:'Pachelbel\'s sequence; descending bass with strong V-I anchors.' },
+    'i,VII,VI,V':{ t:'Andalusian cadence', b:'Flamenco / Spanish minor descent. The V at the end is borrowed major for tension.' },
+    'i,iv,v,i':  { t:'Natural minor cadence', b:'Modal, dorian-tinged. Replace v with V for harmonic minor flavour.' },
+    'i,VI,III,VII': { t:'Minor-key pop loop', b:'The minor counterpart of I–V–vi–IV. Heroic-melancholic feel — used in countless film and game scores.' },
+  };
+  if(known[pat]) return known[pat];
+  // Otherwise classify by motion
+  // count perfect-fifth motion vs step motion vs chromatic
+  let fifth=0, step=0, chromatic=0;
+  for(let i=1;i<prog.length;i++){
+    const a=ni(prog[i-1].root), b=ni(prog[i].root);
+    const d=((b-a+12)%12);
+    if(d===5||d===7) fifth++;
+    else if(d===2||d===10) step++;
+    else if(d===1||d===11) chromatic++;
+  }
+  if(fifth >= prog.length-2) return { t:'Strong fifth-motion progression', b:`${romans}. Mostly perfect-fifth root motion — the most resolved, "forward-moving" relationship in tonal music. Great for fixed cadential structure.` };
+  if(step >= prog.length-2) return { t:'Stepwise / modal feel', b:`${romans}. Roots move by whole steps. Less classically resolved, more modal — common in folk, rock and modal pop (e.g. Mixolydian VII–I motion).` };
+  if(chromatic >= 1) return { t:'Chromatic motion present', b:`${romans}. Contains semitone root movement — adds sophistication, voice-leading interest and the "jazzy" or cinematic flavour.` };
+  return { t:'Mixed-function progression', b:`${romans}. A blend of tonic, subdominant and dominant motion. Open-ended — works well for verses where you don\'t want a strong final cadence.` };
+}
+
+// ---------- Suggestions ----------
+function renderSuggestions(){
+  const grid = document.getElementById('sugg-grid');
+  const help = document.getElementById('sugg-help');
+  grid.innerHTML = '';
+  if(!state.progression.length){
+    help.textContent = 'Build a progression to see context-aware suggestions.';
+    return;
+  }
+  help.textContent = 'Click any card to add it to your progression.';
+  const last = state.progression[state.progression.length-1];
+  const suggestions = suggestNext(last);
+  suggestions.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'sugg-card';
+    card.dataset.strength = s.strength;
+    card.dataset.tip = 'Click to append: ' + s.label;
+    card.innerHTML = `<div class="head"><span class="name">${s.label}</span><span class="tag">${s.romanLabel||''}</span><span style="flex:1"></span><span class="tag" style="color:var(--text-2)">${s.strength}</span></div><div class="why">${s.why}</div>`;
+    card.onclick = ()=>{
+      addToProgression({ root:s.root, qual:s.qual, label:s.label, meta:{ roman:s.romanLabel } });
+      playChordOnce(s.root, s.qual);
+    };
+    grid.appendChild(card);
+  });
+}
+
+function suggestNext(last){
+  const dia = diatonic(state.key, state.mode);
+  const diaMap = new Map(); dia.forEach(c=>diaMap.set(c.root+c.qual,c));
+  const info = diaMap.get(last.root+last.qual);
+  const out = [];
+
+  // 1) STRONG suggestion = canonical functional resolution
+  if(info){
+    if(state.mode==='major'){
+      if(info.degree===5){
+        const I = dia[0];
+        out.push({ root:I.root, qual:I.qual, label:chordLabel(I.root,I.qual), romanLabel:I.roman, strength:'strong',
+          why:'V→I — the strongest cadence in tonal music. The dominant\'s leading tone resolves up to the tonic.' });
+      } else if(info.degree===2){
+        const V = dia[4];
+        out.push({ root:V.root, qual:V.qual, label:chordLabel(V.root,V.qual), romanLabel:V.roman, strength:'strong',
+          why:'ii→V — perfect-fifth root motion sets up the classic ii–V–I cadence.' });
+      } else if(info.degree===4){
+        const V = dia[4];
+        out.push({ root:V.root, qual:V.qual, label:chordLabel(V.root,V.qual), romanLabel:V.roman, strength:'strong',
+          why:'IV→V drives toward the dominant; classic textbook subdominant-to-dominant motion.' });
+      } else if(info.degree===1){
+        const IV = dia[3];
+        out.push({ root:IV.root, qual:IV.qual, label:chordLabel(IV.root,IV.qual), romanLabel:IV.roman, strength:'strong',
+          why:'I→IV — the most ubiquitous departure move. Subdominant lift.' });
+      } else if(info.degree===6){
+        const ii = dia[1];
+        out.push({ root:ii.root, qual:ii.qual, label:chordLabel(ii.root,ii.qual), romanLabel:ii.roman, strength:'strong',
+          why:'vi→ii — perfect-fifth root motion setting up a ii–V–I.' });
+      } else if(info.degree===3){
+        const vi = dia[5];
+        out.push({ root:vi.root, qual:vi.qual, label:chordLabel(vi.root,vi.qual), romanLabel:vi.roman, strength:'strong',
+          why:'iii→vi — strong fifth motion. iii is often the "false tonic" before resolving to vi.' });
+      } else if(info.degree===7){
+        const I = dia[0];
+        out.push({ root:I.root, qual:I.qual, label:chordLabel(I.root,I.qual), romanLabel:I.roman, strength:'strong',
+          why:'vii°→I — the leading-tone diminished resolves to tonic, like a fragment of V7.' });
+      }
+    } else {
+      if(info.degree===5){
+        const i = dia[0];
+        out.push({ root:i.root, qual:i.qual, label:chordLabel(i.root,i.qual), romanLabel:i.roman, strength:'strong',
+          why:'v→i. Try raising to major V for a stronger pull (harmonic minor).' });
+      } else if(info.degree===1){
+        const iv = dia[3];
+        out.push({ root:iv.root, qual:iv.qual, label:chordLabel(iv.root,iv.qual), romanLabel:iv.roman, strength:'strong',
+          why:'i→iv — the minor-key counterpart to I→IV. Deep melancholic lift.' });
+      } else if(info.degree===4){
+        const i = dia[0];
+        out.push({ root:i.root, qual:i.qual, label:chordLabel(i.root,i.qual), romanLabel:i.roman, strength:'strong',
+          why:'iv→i — the classic minor plagal cadence.' });
+      } else if(info.degree===7){
+        const i = dia[0];
+        out.push({ root:i.root, qual:i.qual, label:chordLabel(i.root,i.qual), romanLabel:i.roman, strength:'strong',
+          why:'VII→i — flat-seven to tonic. Classic rock/Mixolydian-tinged cadence.' });
+      } else if(info.degree===6){
+        const v = dia[4];
+        out.push({ root:v.root, qual:v.qual, label:chordLabel(v.root,v.qual), romanLabel:v.roman, strength:'strong',
+          why:'VI→v sets up the minor cadence. Or jump to V (raised) for stronger tension.' });
+      }
+    }
+  }
+
+  // Always include I/i as a fallback "strong" if nothing chosen
+  if(out.length===0){
+    const tonic = dia[0];
+    out.push({ root:tonic.root, qual:tonic.qual, label:chordLabel(tonic.root,tonic.qual), romanLabel:tonic.roman, strength:'strong',
+      why:'Return to tonic — always a safe, resolving choice.' });
+  }
+
+  // 2) INTERESTING — deceptive cadence, modal interchange, or relative-minor move
+  if(info && state.mode==='major'){
+    if(info.degree===5){
+      const vi = dia[5];
+      out.push({ root:vi.root, qual:vi.qual, label:chordLabel(vi.root,vi.qual), romanLabel:vi.roman, strength:'interesting',
+        why:'V→vi — deceptive cadence. Sets up resolution then slips to the relative minor. Bittersweet, extends the phrase.' });
+    } else if(info.degree===1){
+      // suggest borrowed iv (modal interchange)
+      const par = diatonic(state.key,'minor');
+      const iv = par[3];
+      out.push({ root:iv.root, qual:iv.qual, label:chordLabel(iv.root,iv.qual), romanLabel:'iv', strength:'interesting',
+        why:'I→iv (borrowed minor iv) — adds aching colour. Used by Radiohead, McCartney, the Beach Boys. Pure modal interchange.' });
+    } else {
+      // suggest IV again as evergreen
+      const IV = dia[3];
+      out.push({ root:IV.root, qual:IV.qual, label:chordLabel(IV.root,IV.qual), romanLabel:IV.roman, strength:'interesting',
+        why:`${info.roman}→IV opens to the subdominant — a familiar but always-fresh move.` });
+    }
+  } else if(info && state.mode==='minor'){
+    if(info.degree===5){
+      const VI = dia[5];
+      out.push({ root:VI.root, qual:VI.qual, label:chordLabel(VI.root,VI.qual), romanLabel:VI.roman, strength:'interesting',
+        why:'v→VI — deceptive minor cadence. Lands on the submediant instead of the tonic.' });
+    } else {
+      const VII = dia[6];
+      out.push({ root:VII.root, qual:VII.qual, label:chordLabel(VII.root,VII.qual), romanLabel:VII.roman, strength:'interesting',
+        why:`${info.roman}→VII — modal flat-seven motion. Classic rock and folk feel.` });
+    }
+  }
+
+  // 3) SURPRISING — secondary dominant, chromatic mediant, or tritone sub
+  // Secondary dominant of next-likely diatonic chord
+  if(info){
+    // V/vi is the easy crowd-pleaser
+    const target = state.mode==='major' ? dia[5] : dia[2]; // vi in major, III in minor
+    if(target && target.qual!=='dim'){
+      const sec = nm(ni(target.root)+7, preferFlat(target.root));
+      out.push({ root: sec, qual: '7', label: chordLabel(sec,'7'),
+        romanLabel: 'V/'+target.roman, strength:'surprising',
+        why: `Secondary dominant of ${target.roman} — briefly tonicises it. The chromatic notes inside this dominant 7 create a sudden colour shift, then snap back into the key.` });
+    }
+  }
+
+  // Tritone substitute of V → tonic (only if not last move was V already)
+  const V = dia[4];
+  if(V && !(last.root===V.root && last.qual==='')){
+    const ttRoot = nm(ni(V.root)+6, true);
+    const tonic = dia[0];
+    // suggest the tritone sub as a path to tonic
+    out.push({ root: ttRoot, qual: '7', label: chordLabel(ttRoot,'7'),
+      romanLabel: '♭II7', strength:'surprising',
+      why: `Tritone substitute for V — slides chromatically down a semitone into ${tonic.root}. Jazzy, smooth bass motion.` });
+  }
+
+  // Trim to 3
+  return out.slice(0,3);
+}
+
+// ---------- Guitar tab voicings ----------
+// Strings ordered low to high: E A D G B e
+// Library of common open / barre / common fingerings.
+// Each value: array of fret strings ["3","2","0","0","3","3"] where "x" = muted
+const TAB_LIB = {
+  // OPEN CHORDS — majors
+  'C':   ['x','3','2','0','1','0'],
+  'D':   ['x','x','0','2','3','2'],
+  'E':   ['0','2','2','1','0','0'],
+  'F':   ['1','3','3','2','1','1'],
+  'G':   ['3','2','0','0','3','3'],
+  'A':   ['x','0','2','2','2','0'],
+  'B':   ['x','2','4','4','4','2'],
+  // OPEN — minors
+  'Am':  ['x','0','2','2','1','0'],
+  'Dm':  ['x','x','0','2','3','1'],
+  'Em':  ['0','2','2','0','0','0'],
+  'Fm':  ['1','3','3','1','1','1'],
+  'Gm':  ['3','5','5','3','3','3'],
+  'Bm':  ['x','2','4','4','3','2'],
+  // OPEN — 7ths
+  'C7':  ['x','3','2','3','1','0'],
+  'D7':  ['x','x','0','2','1','2'],
+  'E7':  ['0','2','0','1','0','0'],
+  'G7':  ['3','2','0','0','0','1'],
+  'A7':  ['x','0','2','0','2','0'],
+  'B7':  ['x','2','1','2','0','2'],
+  'F7':  ['1','3','1','2','1','1'],
+  // OPEN — maj7
+  'Cmaj7':['x','3','2','0','0','0'],
+  'Dmaj7':['x','x','0','2','2','2'],
+  'Emaj7':['0','2','1','1','0','0'],
+  'Fmaj7':['x','x','3','2','1','0'],
+  'Gmaj7':['3','2','0','0','0','2'],
+  'Amaj7':['x','0','2','1','2','0'],
+  // m7
+  'Am7': ['x','0','2','0','1','0'],
+  'Dm7': ['x','x','0','2','1','1'],
+  'Em7': ['0','2','0','0','0','0'],
+  'Bm7': ['x','2','0','2','0','2'],
+  // diminished (3-note shapes)
+  'B°':  ['x','2','3','4','3','x'],
+  'C°':  ['x','3','4','5','4','x'],
+  'D°':  ['x','x','0','1','3','1'],
+  'E°':  ['0','1','2','0','x','x'],
+  'F°':  ['1','2','3','1','x','x'],
+};
+
+// Movable barre shapes (E-shape = root on 6th string, A-shape = root on 5th string)
+// Each provides quality + relative frets (root = R)
+const BARRE_SHAPES = {
+  // E-shape (root on low E string)
+  E_maj: ['R','R+2','R+2','R+1','R','R'],
+  E_min: ['R','R+2','R+2','R','R','R'],
+  E_7:   ['R','R+2','R','R+1','R','R'],
+  E_m7:  ['R','R+2','R','R','R','R'],
+  E_maj7:['R','R+2','R+2','R+1','R','x'],
+  // A-shape (root on A string), 6th string muted
+  A_maj: ['x','R','R+2','R+2','R+2','R'],
+  A_min: ['x','R','R+2','R+2','R+1','R'],
+  A_7:   ['x','R','R+2','R','R+2','R'],
+  A_m7:  ['x','R','R+2','R','R+1','R'],
+  A_maj7:['x','R','R+2','R+1','R+2','R'],
+};
+
+// Map root note name -> fret on E string (string 6) and A string (string 5)
+const E_STRING_FRET = { 'F':1,'F#':2,'Gb':2,'G':3,'G#':4,'Ab':4,'A':5,'A#':6,'Bb':6,'B':7,'C':8,'C#':9,'Db':9,'D':10,'D#':11,'Eb':11,'E':12 };
+const A_STRING_FRET = { 'A#':1,'Bb':1,'B':2,'C':3,'C#':4,'Db':4,'D':5,'D#':6,'Eb':6,'E':7,'F':8,'F#':9,'Gb':9,'G':10,'G#':11,'Ab':11,'A':12 };
+
+function findVoicing(root, qual){
+  // Try library first
+  const key = chordLabel(root, qual).replace('♯','#').replace('♭','b');
+  // try several name variations
+  const variants = [
+    key,
+    root + qual,
+    root.replace('b','♭').replace('#','♯') + qual,
+  ];
+  for(const v of variants){
+    if(TAB_LIB[v]) return { frets: TAB_LIB[v], note:'standard voicing' };
+  }
+  // Try barre
+  const qualMap = { '':'_maj','m':'_min','7':'_7','m7':'_m7','maj7':'_maj7' };
+  if(qual in qualMap){
+    const e = E_STRING_FRET[root.replace('b','b').replace('#','#')];
+    if(e!=null){
+      const shape = BARRE_SHAPES['E'+qualMap[qual]];
+      if(shape) return { frets: shape.map(s => s==='x'?'x':String(e + (s==='R'?0:parseInt(s.split('+')[1])))), note:`E-shape barre, root on low E at fret ${e}` };
+    }
+    const a = A_STRING_FRET[root];
+    if(a!=null){
+      const shape = BARRE_SHAPES['A'+qualMap[qual]];
+      if(shape) return { frets: shape.map(s => s==='x'?'x':String(a + (s==='R'?0:parseInt(s.split('+')[1])))), note:`A-shape barre, root on A string at fret ${a}` };
+    }
+  }
+  // Diminished / m7b5 fallback
+  if(qual==='dim' || qual==='dim7' || qual==='m7b5'){
+    return { frets:['x','x','?','?','?','x'], note:'(no library voicing — see chord chart)' };
+  }
+  return { frets:['x','x','?','?','?','?'], note:'(no built-in voicing for this chord)' };
+}
+
+function tabForProgression(prog){
+  // Returns a printable ASCII tab block
+  if(!prog.length) return 'Progression is empty.';
+  const strings = ['e','B','G','D','A','E']; // high to low for display
+  // Each chord is a vertical column; frets index: 0=lowE ... 5=highE
+  // We'll lay out as: each chord = 4 chars wide column, 6 string lines high
+  const voicings = prog.map(c => findVoicing(c.root, c.qual));
+  const COL_W = 5;
+  // Build top header (chord names)
+  let lines = strings.map(()=>'');
+  let nameRow = '';
+  let romanRow = '';
+  prog.forEach((c, i)=>{
+    nameRow += pad(c.label, COL_W);
+    romanRow += pad(c.roman||'', COL_W);
+  });
+  // String rows (display high e first, low E last)
+  for(let dispRow=0; dispRow<6; dispRow++){
+    const stringIdx = 5 - dispRow; // 5 = high e, 0 = low E
+    let row = strings[dispRow] + '|';
+    prog.forEach((c, i)=>{
+      const fret = voicings[i].frets[stringIdx];
+      row += pad('-'+fret+'-', COL_W, '-');
+    });
+    row += '|';
+    lines[dispRow] = row;
+  }
+  // Headers
+  const indent = '  ';
+  let out = '';
+  out += indent + nameRow + '\n';
+  out += indent + romanRow + '\n';
+  out += lines.join('\n') + '\n';
+  // Per-chord notes
+  out += '\n';
+  prog.forEach((c, i)=>{
+    out += `${(i+1).toString().padStart(2)}. ${c.label}${c.roman?' ('+c.roman+')':''} — ${voicings[i].note}\n`;
+  });
+  return out;
+}
+function pad(s, w, ch){
+  ch = ch||' ';
+  s = String(s);
+  while(s.length<w) s += ch;
+  return s.slice(0,w);
+}
+
+function buildExport(){
+  const head = `Harmony Workbench — Progression Export\nKey: ${fmt(state.key)} ${state.mode}\nTempo: ${document.getElementById('tempo').value} bpm\n\n`;
+  const roman = 'Roman numerals: ' + state.progression.map(c=>c.roman||'?').join(' – ') + '\n';
+  const names = 'Chord symbols: ' + state.progression.map(c=>c.label).join(' – ') + '\n\n';
+  const q = describeProgression(state.progression);
+  const desc = q ? `Notes on this progression:\n${q.title}\n${q.body}\n\n` : '';
+  const tab = 'Guitar tab voicings (standard tuning, ?=incomplete):\n\n' + tabForProgression(state.progression);
+  return head + roman + names + desc + tab;
+}
+
+// ---------- Event wiring ----------
+document.getElementById('key-sel').addEventListener('change', e=>{ state.key=e.target.value; state.focal=null; render(); });
+document.getElementById('mode-sel').addEventListener('change', e=>{ state.mode=e.target.value; state.focal=null; render(); });
+document.querySelectorAll('.layer-pill').forEach(p=>{
+  p.addEventListener('click', e=>{
+    if(e.target.tagName==='INPUT') return;
+    const cb = p.querySelector('input');
+    cb.checked = !cb.checked;
+    state.layers[p.dataset.layer] = cb.checked;
+    p.classList.toggle('on', cb.checked);
+    render();
+  });
+});
+document.getElementById('play-btn').addEventListener('click', playProgression);
+document.getElementById('stop-btn').addEventListener('click', stopPlayback);
+document.getElementById('clear-prog').addEventListener('click', ()=>{ state.progression=[]; renderProgression(); renderSuggestions(); });
+document.getElementById('copy-prog').addEventListener('click', ()=>{
+  const text = `${fmt(state.key)} ${state.mode}: ` + state.progression.map(c=>`${c.label}${c.roman?' ('+c.roman+')':''}`).join(' – ');
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.getElementById('copy-prog');
+    const orig = btn.textContent; btn.textContent='Copied ✓';
+    setTimeout(()=>btn.textContent=orig, 1500);
+  });
+});
+document.getElementById('tempo').addEventListener('input', e=>{ document.getElementById('tempo-val').textContent = e.target.value; });
+// Background click to clear focal
+document.getElementById('wheel-svg').addEventListener('click', e=>{
+  if(e.target.tagName==='svg' || e.target.id==='ring-bg' || e.target.tagName==='circle' && e.target.parentNode.id==='ring-bg'){
+    state.focal = null; render();
+  }
+});
+// Export modal
+const exportModal = document.getElementById('export-modal');
+document.getElementById('export-btn').addEventListener('click', ()=>{
+  if(!state.progression.length){ alert('Build a progression first.'); return; }
+  document.getElementById('export-text').textContent = buildExport();
+  exportModal.classList.add('show');
+});
+document.getElementById('close-export').addEventListener('click', ()=> exportModal.classList.remove('show'));
+exportModal.addEventListener('click', e=>{ if(e.target===exportModal) exportModal.classList.remove('show'); });
+document.getElementById('copy-export').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(document.getElementById('export-text').textContent).then(()=>{
+    const b = document.getElementById('copy-export');
+    const o = b.textContent; b.textContent='Copied ✓'; setTimeout(()=>b.textContent=o, 1500);
+  });
+});
+document.getElementById('download-export').addEventListener('click', ()=>{
+  const blob = new Blob([document.getElementById('export-text').textContent], { type:'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `progression-${state.key}-${state.mode}.txt`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>
